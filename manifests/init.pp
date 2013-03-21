@@ -10,6 +10,7 @@
 #    - CentOS 5.4
 #    - Amazon Linux 2011.09
 #    - FreeBSD 9.0
+#    - Gentoo Linux
 #
 # Parameters:
 #
@@ -126,7 +127,26 @@ class ntp($servers=hiera('ntp_servers','UNSET'),
       }
     }
     default: {
-      fail("The ${module_name} module is not supported on ${::osfamily} based systems")
+      case $::operatingsystem {
+        Gentoo: {
+          $supported  = true
+          $pkg_name   = [ 'net-misc/ntp' ]
+          $svc_name   = 'ntpd'
+          $config     = '/etc/ntp.conf'
+          $config_tpl = 'ntp.conf.gentoo.erb'
+          if ($servers == "UNSET") {
+            $server_reals = [ '0.gentoo.pool.ntp.org',
+                              '1.gentoo.pool.ntp.org',
+                              '2.gentoo.pool.ntp.org',
+                              '3.gentoo.pool.ntp.org', ]
+          } else {
+            $servers_real = $servers
+          }
+        }
+        default: {
+          fail("The ${module_name} module is not supported on ${::osfamily}/${::operatingsystem} based systems")
+        }
+      }
     }
   }
 

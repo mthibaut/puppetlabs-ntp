@@ -84,6 +84,7 @@ The module has been tested on:
 * Debian 6.0 
 * CentOS 5.4.
 * Ubuntu 12.04
+* Gentoo Linux
 
 Testing on other platforms has been light and cannot be guaranteed. 
 
