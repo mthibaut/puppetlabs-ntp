@@ -135,7 +135,7 @@ class ntp($servers=hiera('ntp_servers','UNSET'),
           $config     = '/etc/ntp.conf'
           $config_tpl = 'ntp.conf.gentoo.erb'
           if ($servers == "UNSET") {
-            $server_reals = [ '0.gentoo.pool.ntp.org',
+            $servers_real = [ '0.gentoo.pool.ntp.org',
                               '1.gentoo.pool.ntp.org',
                               '2.gentoo.pool.ntp.org',
                               '3.gentoo.pool.ntp.org', ]
