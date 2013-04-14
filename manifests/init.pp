@@ -10,6 +10,7 @@
 #    - CentOS 5.4
 #    - Amazon Linux 2011.09
 #    - FreeBSD 9.0
+#    - Gentoo Linux
 #
 # Parameters:
 #
@@ -126,7 +127,45 @@ class ntp($servers=hiera('ntp_servers','UNSET'),
       }
     }
     default: {
-      fail("The ${module_name} module is not supported on ${::osfamily} based systems")
+      case $::operatingsystem {
+        Gentoo: {
+          $supported  = true
+          $pkg_name   = [ 'net-misc/ntp' ]
+          $svc_name   = 'ntpd'
+          $config     = '/etc/ntp.conf'
+          $config_tpl = 'ntp.conf.gentoo.erb'
+          if ($servers == "UNSET") {
+            $servers_real = [ '0.gentoo.pool.ntp.org',
+                              '1.gentoo.pool.ntp.org',
+                              '2.gentoo.pool.ntp.org',
+                              '3.gentoo.pool.ntp.org', ]
+          } else {
+            $servers_real = $servers
+          }
+
+          # On Gentoo, the boot time is set through ntp-client
+          # service, so handle it here.
+          file { '/etc/conf.d/ntp-client':
+            ensure  => file,
+            owner   => 0,
+            group   => 0,
+            mode    => '0644',
+            content => template("${module_name}/ntp-client.conf.gentoo.erb"),
+            require => Package[$pkg_name],
+          }
+
+          service { 'ntp-client':
+            ensure     => $ensure,
+            enable     => $enable,
+            hasstatus  => true,
+            hasrestart => true,
+            subscribe  => [ Package[$pkg_name], File['/etc/conf.d/ntp-client'] ],
+          }
+        }
+        default: {
+          fail("The ${module_name} module is not supported on ${::osfamily}/${::operatingsystem} based systems")
+        }
+      }
     }
   }
 
